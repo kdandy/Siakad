@@ -1,26 +1,27 @@
-name: "CodeQL"
+name: "CodeQL Advanced"
 
 on:
   push:
-    branches: [main]
+    branches: [ "main" ]
   pull_request:
-    branches: [main]
+    branches: [ "main" ]
   schedule:
-    - cron: '30 1 * * 1'  # Menjalankan CodeQL setiap minggu pada pukul 01:30 UTC
+    - cron: '45 2 * * 3'
 
 jobs:
   analyze:
-    name: Analyze
+    name: Analyze (${{ matrix.language }})
     runs-on: ubuntu-latest
     permissions:
       security-events: write
+      packages: read
       actions: read
       contents: read
 
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'php' ]  # Laravel menggunakan PHP, jadi hanya PHP yang dianalisis
+        language: [ 'php' ] # Laravel menggunakan PHP, ini harus ada!
 
     steps:
       - name: Checkout repository
@@ -29,16 +30,18 @@ jobs:
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.1'  # Sesuaikan dengan versi PHP yang digunakan di Laravel Anda
+          php-version: '8.1' # Sesuaikan dengan versi PHP di proyek Anda
           tools: composer, phpstan, phpcs
 
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
+        uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }}
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
