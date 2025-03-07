@@ -1,0 +1,38 @@
+name: APIsec
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  schedule:
+    - cron: '41 21 * * 6'  # Menjalankan setiap Sabtu pukul 21:41 UTC
+
+  workflow_dispatch:  # Memungkinkan eksekusi manual dari GitHub Actions UI
+
+permissions:
+  contents: read
+
+jobs:
+  Trigger_APIsec_scan:
+    permissions:
+      security-events: write  # Untuk mengupload hasil pemindaian dalam format SARIF
+      actions: read  # Diperlukan untuk repo privat agar dapat mengambil status eksekusi Action
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4  # Pastikan repository di-clone sebelum pemindaian
+
+      - name: APIsec scan
+        uses: apisec-inc/apisec-run-scan@latest  # Gunakan versi terbaru
+        with:
+          apisec-username: ${{ secrets.apisec_username }}
+          apisec-password: ${{ secrets.apisec_password }}
+          apisec-project: "VAmPI"
+          sarif-result-file: "apisec-results.sarif"
+
+      - name: Import APIsec scan results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: "apisec-results.sarif"
