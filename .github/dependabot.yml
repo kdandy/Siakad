@@ -1,0 +1,6 @@
+version: 2
+updates:
+  - package-ecosystem: "composer" # Menggunakan Composer untuk Laravel
+    directory: "/" # Lokasi file composer.json
+    schedule:
+      interval: "weekly"
